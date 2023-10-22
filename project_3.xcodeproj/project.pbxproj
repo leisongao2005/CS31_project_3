@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D73382902AE5B53F00B60E23 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D733828F2AE5B53F00B60E23 /* main.cpp */; };
+		D73382902AE5B53F00B60E23 /* picture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D733828F2AE5B53F00B60E23 /* picture.cpp */; };
+		D73382982AE5C7BD00B60E23 /* grid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D73382962AE5C7BD00B60E23 /* grid.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +25,9 @@
 
 /* Begin PBXFileReference section */
 		D733828C2AE5B53F00B60E23 /* project_3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = project_3; sourceTree = BUILT_PRODUCTS_DIR; };
-		D733828F2AE5B53F00B60E23 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		D733828F2AE5B53F00B60E23 /* picture.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = picture.cpp; sourceTree = "<group>"; };
+		D73382962AE5C7BD00B60E23 /* grid.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = grid.cpp; sourceTree = "<group>"; };
+		D73382972AE5C7BD00B60E23 /* grid.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = grid.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +60,9 @@
 		D733828E2AE5B53F00B60E23 /* project_3 */ = {
 			isa = PBXGroup;
 			children = (
-				D733828F2AE5B53F00B60E23 /* main.cpp */,
+				D733828F2AE5B53F00B60E23 /* picture.cpp */,
+				D73382962AE5C7BD00B60E23 /* grid.cpp */,
+				D73382972AE5C7BD00B60E23 /* grid.h */,
 			);
 			path = project_3;
 			sourceTree = "<group>";
@@ -119,7 +124,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D73382902AE5B53F00B60E23 /* main.cpp in Sources */,
+				D73382902AE5B53F00B60E23 /* picture.cpp in Sources */,
+				D73382982AE5C7BD00B60E23 /* grid.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -4,10 +4,20 @@
 //
 //  Created by Leison Gao on 10/22/23.
 //
+// Grid library interface
 
-#ifndef grid_hpp
-#define grid_hpp
+#ifndef GRID_INCLUDED
+#define GRID_INCLUDED
 
-#include <stdio.h>
+const int MAXROWS = 30;
+const int MAXCOLS = 30;
 
-#endif /* grid_hpp */
+void setSize(int nr, int nc);
+int getRows();
+int getCols();
+void clearGrid();
+void setChar(int r, int c, char ch);
+char getChar(int r, int c);
+void draw();
+
+#endif // GRID_INCLUDED
