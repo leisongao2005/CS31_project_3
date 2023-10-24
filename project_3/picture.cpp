@@ -16,28 +16,55 @@ const int VERT = 1;
 const int FG = 0;
 const int BG = 1;
 
+int ground = 0;
+char plotChar = '*';
+int row = 1;
+int col = 1;
+
 void plotHorizontalLine(int r, int c, int distance, char ch, int fgbg);
 void plotVerticalLine(int r, int c, int distance, char ch);
 void plotRectangle(int r, int c, int height, int width, char ch);
 
 void fgbgChar(int r, int c, char ch, bool background);
 
-bool plotLine(int r, int c, int distance, int dir, char plotChar, int fgbg);
+bool plotLine(int& r, int& c, int distance, int dir, char plotChar, int fgbg);
 bool inGrid(int r, int c);
+
+int performCommands(string commandString, char& plotChar, int& mode, int& badPos);
+
+int translateInstructionString(string text);
+
+bool processLine(string text, int& pos);
+bool processFGBG(string text, int& pos);
+bool processClear(string text, int& pos);
 
 int main()
 {
-    setSize(2, 12);  // 2 rows, 12 columns
-    assert(plotLine(1, 1, 0, HORIZ, 'H', FG));
-    assert(plotLine(1, 2, 0, HORIZ, 'i', FG));
-    assert(plotLine(1, 3, 0, HORIZ, '!', FG));
-    draw();  //  displays  Hi!  in the top row of the grid
-    assert(plotLine(1, 3, 0, HORIZ, ' ', FG));
-    draw();  //  displays  Hi   in the top row of the grid
-    assert(plotLine(1, 1, 10, HORIZ, ' ', BG));
-    draw();  //  displays  Hi   in the top row of the grid
-    assert( ! plotLine(1, 1, 10, HORIZ, '\n', FG));
-    draw();  //  displays  Hi   in the top row of the grid
+    setSize(8, 20);
+    int p = 0;
+    row = 1;
+    col = 1;
+    if (processLine("h12", p))
+        cout << "it worked" << p << endl;
+    p = 0;
+    if (processLine("v3", p))
+        cout << "it worked 2" << p <<endl;
+    p = 0;
+    if (processLine("H-1", p))
+        cout << "it worked 3" << p <<endl;
+    p = 0;
+    if (processFGBG("B@", p))
+        cout << "it worked 4" << p <<endl;
+    p = 0;
+    if (processLine("v-3", p))
+        cout << "it worked 4" << p <<endl;
+    p = 0;
+    if (processClear("C", p))
+        cout << "it worked 5" << p <<endl;
+    p = 0;
+    if (processLine("h12", p))
+        cout << "it worked" << p << endl;
+    draw();
 }
 
 void plotHorizontalLine(int r, int c, int distance, char ch, int fgbg) {
@@ -81,15 +108,8 @@ void plotVerticalLine(int r, int c, int distance, char ch, int fgbg) {
         }
     }
 }
-//
-//void plotRectangle(int r, int c, int height, int width, char ch) {
-//    plotVerticalLine(r, c, height, ch);
-//    plotVerticalLine(r, c + width, height, ch);
-//    plotHorizontalLine(r, c, width, ch);
-//    plotHorizontalLine(r + height, c, width, ch);
-//}
 
-bool plotLine(int r, int c, int distance, int dir, char plotChar, int fgbg) {
+bool plotLine(int& r, int& c, int distance, int dir, char plotChar, int fgbg) {
     bool dirCorr = (dir == HORIZ || dir == VERT);
     bool fgbgCorr = (fgbg == FG || fgbg == BG);
     bool charCorr = isprint(plotChar);
@@ -98,6 +118,7 @@ bool plotLine(int r, int c, int distance, int dir, char plotChar, int fgbg) {
         if (dir == HORIZ) {
             if (inGrid(r, c + distance)) {
                 plotHorizontalLine(r, c, distance, plotChar, fgbg);
+                c += distance;
             }
             else {
                 return false;
@@ -106,6 +127,7 @@ bool plotLine(int r, int c, int distance, int dir, char plotChar, int fgbg) {
         else if (dir == VERT) {
             if (inGrid(r + distance, c)) {
                 plotVerticalLine(r, c, distance, plotChar, fgbg);
+                r += distance;
             }
             else {
                 return false;
@@ -131,4 +153,129 @@ void fgbgChar(int r, int c, char ch, bool foreground) {
 
 bool inGrid(int r, int c) {
     return (0 < r && r <= getRows() && 0 < c && c <= getCols());
+}
+
+int performCommands(string commandString, char& plotChar, int& mode, int& badPos) {
+    if (!isprint(plotChar) || (mode != FG && mode != BG)) {
+        return 2;
+    }
+    int r = 1;
+    int c = 1;
+    int dist;
+    int fgbg;
+    int dir;
+    for (int i = 0; i < commandString.size(); i ++) {
+        char commandChar = tolower(commandString[i]);
+        if (commandChar == 'h') {
+            if (commandString[i] == '-') {
+                cout << "hoiasjdofij";
+            }
+        }
+    }
+    return 0;
+}
+// must decide when to increment pos, increments it at the end of each function
+int translateInstructionString(string text) {
+    int pos = 0;
+    while (pos < text.size()) {
+        if (char(tolower(text[pos])) == 'h' || char(tolower(text[pos])) == 'v') {
+            if (!processLine(text, pos)) {
+                return false;
+            }
+        }
+        else if (char(tolower(text[pos])) == 'f' || char(tolower(text[pos])) == 'b') {
+            if (!processFGBG(text, pos)) {
+                return false;
+            }
+        }
+        else if (char(tolower(text[pos])) == 'c') {
+            if (!processClear(text, pos)) {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool processLine(string text, int& pos) {
+    int dir;
+    if (tolower(text[pos]) == 'h') {
+        dir = HORIZ;
+    }
+    else {
+        dir = VERT;
+    }
+    
+    pos ++;
+    
+    bool neg = false;
+    int dist = 0;
+    int digits = 0;
+    if (pos == text.size()) {
+        return false;
+    }
+    // double negative sign --> error
+    if (text[pos] == '-') {
+        if (neg == true) // double negative sign --> error
+            return false;
+        else {
+            neg = true;
+            pos ++;
+        }
+            
+    }
+    if (isnumber(text[pos])) {
+        for (; digits < 2 && pos != text.size() && isnumber(text[pos]); pos ++) {
+            dist = dist * 10 + int(text[pos] - '0');
+            digits ++;
+        }
+        if (neg)
+            dist = -dist;
+        
+        if (!plotLine(row, col, dist, dir, plotChar, ground)) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    else {
+        return false;
+    }
+}
+
+bool processFGBG(string text, int& pos) {
+    if (tolower(text[pos]) == 'f') {
+        ground = FG;
+        pos ++;
+    }
+    else if (tolower(text[pos]) == 'b') {
+        ground = BG;
+        pos ++;
+    }
+    else {
+        return false;
+    }
+    
+    if (isprint(text[pos])) {
+        plotChar = text[pos];
+        pos ++;
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool processClear(string text, int& pos) {
+    clearGrid();
+    row = 1;
+    col = 1;
+    ground = FG;
+    plotChar = '*';
+    pos ++;
+    return true;
 }
