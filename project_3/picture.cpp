@@ -17,13 +17,13 @@ const int FG = 0;
 const int BG = 1;
 
 int ground = 0;
-char plotChar = '*';
+char pChar = '*';
 int row = 1;
 int col = 1;
 
-void plotHorizontalLine(int r, int c, int distance, char ch, int fgbg);
-void plotVerticalLine(int r, int c, int distance, char ch);
-void plotRectangle(int r, int c, int height, int width, char ch);
+bool plotHorizontalLine(int r, int c, int distance, char ch, int fgbg);
+bool plotVerticalLine(int r, int c, int distance, char ch);
+//void plotRectangle(int r, int c, int height, int width, char ch);
 
 void fgbgChar(int r, int c, char ch, bool background);
 
@@ -41,71 +41,74 @@ bool processClear(string text, int& pos);
 int main()
 {
     setSize(8, 20);
-    int p = 0;
-    row = 1;
-    col = 1;
-    if (processLine("h12", p))
-        cout << "it worked" << p << endl;
-    p = 0;
-    if (processLine("v3", p))
-        cout << "it worked 2" << p <<endl;
-    p = 0;
-    if (processLine("H-1", p))
-        cout << "it worked 3" << p <<endl;
-    p = 0;
-    if (processFGBG("B@", p))
-        cout << "it worked 4" << p <<endl;
-    p = 0;
-    if (processLine("v-3", p))
-        cout << "it worked 4" << p <<endl;
-    p = 0;
-    if (processClear("C", p))
-        cout << "it worked 5" << p <<endl;
-    p = 0;
-    if (processLine("h12", p))
-        cout << "it worked" << p << endl;
+    int p = -1;
+    performCommands("FH8", pChar, ground, p);
+    cout << p << endl;
+    performCommands("v2b h12fHh1fih0", pChar, ground, p);
+    cout << p << endl;
+    performCommands("CV6", pChar, ground, p);
+    cout << p << endl;
     draw();
+    
 }
 
-void plotHorizontalLine(int r, int c, int distance, char ch, int fgbg) {
+bool plotHorizontalLine(int r, int c, int distance, char ch, int fgbg) {
     bool foreground = fgbg == FG;
     if (distance == 0) {
         fgbgChar(r, c, ch, foreground);
+        return true;
     }
     else if (distance > 0) {
         for (int i = 0; i < distance + 1; i ++) {
             if (c + i > 0 && c + i <= getCols()) {
                 fgbgChar(r, c + i, ch, foreground);
             }
+            else {
+                return false;
+            }
         }
+        return true;
     }
     else {
         for (int i = c; i >= c + distance; i --) {
             if (i > 0 && i <= getCols()) {
                 fgbgChar(r, i, ch, foreground);
             }
+            else {
+                return false;
+            }
         }
+        return true;
     }
 }
 
-void plotVerticalLine(int r, int c, int distance, char ch, int fgbg) {
+bool plotVerticalLine(int r, int c, int distance, char ch, int fgbg) {
     bool foreground = fgbg == FG;
     if (distance == 0) {
         fgbgChar(r, c, ch, foreground);
+        return true;
     }
     else if (distance > 0) {
         for (int i = 0; i < distance + 1; i ++) {
             if (r + i > 0 && r + i <= getRows()) {
                 fgbgChar(r + i, c, ch, foreground);
             }
+            else {
+                return false;
+            }
         }
+        return true;
     }
     else {
         for (int i = r; i >= r + distance; i --) {
             if (i > 0 && i <= getRows()) {
                 fgbgChar(i, c, ch, foreground);
             }
+            else {
+                return false;
+            }
         }
+        return true;
     }
 }
 
@@ -159,17 +162,48 @@ int performCommands(string commandString, char& plotChar, int& mode, int& badPos
     if (!isprint(plotChar) || (mode != FG && mode != BG)) {
         return 2;
     }
-    int r = 1;
-    int c = 1;
-    int dist;
-    int fgbg;
-    int dir;
-    for (int i = 0; i < commandString.size(); i ++) {
-        char commandChar = tolower(commandString[i]);
-        if (commandChar == 'h') {
-            if (commandString[i] == '-') {
-                cout << "hoiasjdofij";
+//    int r = 1;
+//    int c = 1;
+//    int dist;
+//    int fgbg;
+//    int dir;
+//    for (int i = 0; i < commandString.size(); i ++) {
+//        char commandChar = tolower(commandString[i]);
+//        if (commandChar == 'h') {
+//            if (commandString[i] == '-') {
+//                cout << "hoiasjdofij";
+//            }
+//        }
+//    }
+//    return 0;
+    row = 1;
+    col = 1;
+    pChar = plotChar;
+    ground = mode;
+    int pos = 0;
+    string text = commandString;
+    while (pos < text.size()) {
+        if (char(tolower(text[pos])) == 'h' || char(tolower(text[pos])) == 'v') {
+            if (!processLine(text, pos)) {
+                badPos = pos;
+                return 1;
             }
+        }
+        else if (char(tolower(text[pos])) == 'f' || char(tolower(text[pos])) == 'b') {
+            if (!processFGBG(text, pos)) {
+                badPos = pos;
+                return 1;
+            }
+        }
+        else if (char(tolower(text[pos])) == 'c') {
+            if (!processClear(text, pos)) {
+                badPos = pos;
+                return 1;
+            }
+        }
+        else {
+            badPos = pos;
+            return 1;
         }
     }
     return 0;
@@ -235,7 +269,7 @@ bool processLine(string text, int& pos) {
         if (neg)
             dist = -dist;
         
-        if (!plotLine(row, col, dist, dir, plotChar, ground)) {
+        if (!plotLine(row, col, dist, dir, pChar, ground)) {
             return false;
         }
         else {
@@ -261,7 +295,7 @@ bool processFGBG(string text, int& pos) {
     }
     
     if (isprint(text[pos])) {
-        plotChar = text[pos];
+        pChar = text[pos];
         pos ++;
         return true;
     }
@@ -275,7 +309,7 @@ bool processClear(string text, int& pos) {
     row = 1;
     col = 1;
     ground = FG;
-    plotChar = '*';
+    pChar = '*';
     pos ++;
     return true;
 }
