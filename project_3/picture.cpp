@@ -34,70 +34,59 @@ int performCommands(string commandString, char& plotChar, int& mode, int& badPos
 
 int translateInstructionString(string text);
 
-int processLine(string text, int& pos, int& row, int& col, int plotChar, int mode);
+bool processLine(string text, int& pos, int& row, int& col, int plotChar, int mode, int& badPos);
 bool processFGBG(string text, int& pos, char& plotChar, int& mode);
 bool processClear(string text, int& pos, int& row, int& col, int& mode, char& plotChar);
 
 int main()
 {
-    setSize(8, 20);
-    char ch = '*';
-    int ground = FG;
-    int badpos = 999;
-    int pos = 5;
-    int r = 1;
-    int c = 1;
-    cout << processLine("h12V3H-1B@v-3", pos, r, c, ch, ground) << endl;
-//    cout << processFGBG("h12V3H-1B@v-3", pos, ch, ground) << endl;
-//    cout << "badpos: " << pos << endl;
-    draw();
-//    for (;;)
-//    {
-//        cout << "Enter the number of grid rows and columns (max 30 each): ";
-//        int nRows;
-//        int nCols;
-//        cin >> nRows >> nCols;
-//        cin.ignore(10000, '\n');
-//        if (nRows >= 1  &&  nRows <= MAXROWS  &&  nCols >= 1  &&  nCols <= MAXCOLS)
-//        {
-//            setSize(nRows, nCols);
-//            break;
-//        }
-//        cout << "The numbers must be between 1 and 30." << endl;
-//    }
-//    char currentChar = '*';
-//    int currentMode = FG;
-//    for (;;)
-//    {
-//        cout << "Enter a command string (empty line to quit): ";
-//        string cmd;
-//        getline(cin, cmd);
-//        if (cmd == "")
-//            break;
-//        int position;
-//        int status = performCommands(cmd, currentChar, currentMode, position);
-//        switch (status)
-//        {
-//          case 0:
-//            draw();
-//            break;
-//          case 1:
-//            cout << "Syntax error at position " << position << endl;
-//            break;
-//          case 2:
-//            if (!isprint(currentChar))
-//                cout << "Current charaacter is not printable" << endl;
-//            if (currentMode != FG  &&  currentMode != BG)
-//                cout << "Current mode is " << currentMode << ", not FG or BG" << endl;
-//            break;
-//          case 3:
-//            cout << "Cannot perform command at position " << position << endl;
-//            break;
-//          default:
-//              // It should be impossible to get here.
-//            cout << "performCommands returned " << status << "!" << endl;
-//        }
-//    }
+    for (;;)
+    {
+        cout << "Enter the number of grid rows and columns (max 30 each): ";
+        int nRows;
+        int nCols;
+        cin >> nRows >> nCols;
+        cin.ignore(10000, '\n');
+        if (nRows >= 1  &&  nRows <= MAXROWS  &&  nCols >= 1  &&  nCols <= MAXCOLS)
+        {
+            setSize(nRows, nCols);
+            break;
+        }
+        cout << "The numbers must be between 1 and 30." << endl;
+    }
+    char currentChar = '*';
+    int currentMode = FG;
+    for (;;)
+    {
+        cout << "Enter a command string (empty line to quit): ";
+        string cmd;
+        getline(cin, cmd);
+        if (cmd == "")
+            break;
+        int position;
+        int status = performCommands(cmd, currentChar, currentMode, position);
+        switch (status)
+        {
+          case 0:
+            draw();
+            break;
+          case 1:
+            cout << "Syntax error at position " << position << endl;
+            break;
+          case 2:
+            if (!isprint(currentChar))
+                cout << "Current charaacter is not printable" << endl;
+            if (currentMode != FG  &&  currentMode != BG)
+                cout << "Current mode is " << currentMode << ", not FG or BG" << endl;
+            break;
+          case 3:
+            cout << "Cannot perform command at position " << position << endl;
+            break;
+          default:
+              // It should be impossible to get here.
+            cout << "performCommands returned " << status << "!" << endl;
+        }
+    }
 }
 
 //int main()
@@ -114,8 +103,6 @@ int main()
 //    //A successful command string should not change bad
 //    assert(performCommands("V2", pc, m, bad) == 0  &&  getChar(3, 1) == '%'  &&  bad == 999);
 //    assert(performCommands("V2H2Q2", pc, m, bad) == 1  &&  bad == 4);
-//    performCommands("H4V3V-1H-9", pc, m, bad);
-//    cout << bad << endl;
 //    assert(performCommands("H4V3V-1H-9", pc, m, bad) == 3  &&  bad == 7);
 //    cout << "All tests succeeded." << endl;
 //}
@@ -156,45 +143,40 @@ int performCommands(string commandString, char& plotChar, int& mode, int& badPos
     int row = 1;
     int col = 1;
     int pos = 0;
+    int wrongPos = -1;
     string text = commandString;
     while (pos < text.size()) {
         if (char(tolower(text[pos])) == 'h' || char(tolower(text[pos])) == 'v') {
-            if (processLine(text, pos, row, col, plotChar, mode) == 1) {
-                cout << "error 1" << endl;
+            if (!processLine(text, pos, row, col, plotChar, mode, wrongPos)) {
+                if (wrongPos != -1) {
+                    badPos = wrongPos;
+                    return 3;
+                }
                 badPos = pos;
                 return 1;
-            }
-            else if (processLine(text, pos, row, col, plotChar, mode) == 2) {
-                badPos = pos;
-                return 3;
             }
         }
         else if (char(tolower(text[pos])) == 'f' || char(tolower(text[pos])) == 'b') {
             if (!processFGBG(text, pos, plotChar, mode)) {
-                cout << "error 2" << endl;
                 badPos = pos;
                 return 1;
             }
         }
         else if (char(tolower(text[pos])) == 'c') {
             if (!processClear(text, pos, row, col, mode, plotChar)) {
-                cout << "error 3" << endl;
                 badPos = pos;
                 return 1;
             }
         }
         else {
-            cout << "error 4, read: " << char(tolower(text[pos])) << endl;
             badPos = pos;
             return 1;
         }
     }
     return 0;
 }
-// 0 (false) - no problem
-// 1 (true) - syntax error
-// 2 (true) - plotting out of string size
-int processLine(string text, int& pos, int& row, int& col, int plotChar, int mode) {
+
+bool processLine(string text, int& pos, int& row, int& col, int plotChar, int mode, int& badPos) {
     int dir;
     if (tolower(text[pos]) == 'h') {
         dir = HORIZ;
@@ -209,12 +191,12 @@ int processLine(string text, int& pos, int& row, int& col, int plotChar, int mod
     int dist = 0;
     int digits = 0;
     if (pos == text.size()) {
-        return 1;
+        return false;
     }
     // double negative sign --> error
     if (text[pos] == '-') {
         if (neg == true) // double negative sign --> error
-            return 1;
+            return false;
         else {
             neg = true;
             pos ++;
@@ -230,43 +212,14 @@ int processLine(string text, int& pos, int& row, int& col, int plotChar, int mod
             dist = -dist;
         
         if (!plotLine(row, col, dist, dir, plotChar, mode)) {
-            // find out why plotLine didn't work: syntax or plot out of range
-            bool dirCorr = (dir == HORIZ || dir == VERT);
-            bool fgbgCorr = (mode == FG || mode == BG);
-            bool charCorr = isprint(plotChar);
-            if (dirCorr && fgbgCorr && charCorr && inGrid(row, col)) {
-                if (dir == HORIZ) {
-                    if (!inGrid(row, col + dist)) {
-//                        plotHorizontalLine(row, col, dist, plotChar, mode);
-                        int offset = digits + 1;
-                        if (neg) {
-                            offset ++;
-                        }
-                        cout << "deteced out of grid" << endl;
-                        cout << "pos: (" << row << col << endl;
-                        cout << "dist: " << dist << " dir: " << dir << endl;
-                        pos -= offset;
-                        return 2;
-                    }
-//                    else {
-//                        return false;
-//                    }
+            if (!inGrid(row + (1 - dir)*dist, col + dir*dist)) {
+                int offset = digits + 1;
+                if (neg) {
+                    offset ++;
                 }
-                else if (dir == VERT) {
-                    if (!inGrid(row + dist, col)) {
-//                        plotVerticalLine(row, col, dist, plotChar, mode);
-                        return 2;
-                    }
-//                    else {
-//                        return false;
-//                    }
-                }
-                return 0;
+                badPos = pos - offset;
             }
-            else {
-                return 1;
-            }
-            return 1;
+            return false;
         }
         else {
             if (dir == HORIZ) {
@@ -275,11 +228,11 @@ int processLine(string text, int& pos, int& row, int& col, int plotChar, int mod
             else if (dir == VERT){
                 row += dist;
             }
-            return 0;
+            return true;
         }
     }
     else {
-        return 1;
+        return false;
     }
 }
 
@@ -390,5 +343,3 @@ void fgbgChar(int r, int c, char ch, bool foreground) {
 bool inGrid(int r, int c) {
     return (0 < r && r <= getRows() && 0 < c && c <= getCols());
 }
-
-
